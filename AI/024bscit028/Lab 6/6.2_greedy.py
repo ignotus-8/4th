@@ -42,5 +42,5 @@ graph = {
 
 heuristic = {"A": 46, "B": 39, "C": 41, "D": 29, "E": 38, "F": 17, "G": 6, "H": 0}
 
-print("A* Search:")
+print("Greedy Best First Search:")
 greedy(graph, heuristic, "A", "H")

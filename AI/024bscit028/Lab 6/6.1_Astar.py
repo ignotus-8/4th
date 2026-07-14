@@ -18,7 +18,7 @@ def astar(graph, heuristic, start, goal):
         visited.add(node)
         print(node, end=" ")
 
-        if node == goal:
+        if node == goal: 
             print(f"\nMinimum Cost: {g}")
             return
 

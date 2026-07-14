@@ -21,7 +21,7 @@ graph2 = {
     "D": {"G": 3},
     "G": {}
 }
-
+ 
 for node in graph2:
     print(f"{node}->{graph2[node]}")
 
