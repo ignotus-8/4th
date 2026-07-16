@@ -7792,88 +7792,39 @@ insert  into `payments`(`customerNumber`,`checkNumber`,`paymentDate`,`amount`) v
 -- select * from offices;
 
 -- 1
-select p.productName, p.productVendor
-from orders o
-join orderdetails od
-	on o.orderNumber = od.orderNumber
-join products p
-	on od.productCode = p.productCode
-where o.customerNumber = 103;
-
--- 2
-select c.customerName, o.orderdate
-from customers c
-join orders o
-	on c.customerNumber = o.customerNumber
-where orderDate between '2003-10-01' and '2003-10-30'
-	and o.status = 'Shipped';
-
--- 3
-select c.customerName, c.creditLimit, o.orderNumber
-from customers c
-join orders o
-	on c.customerNumber = o.customerNumber
-where o.orderNumber in (10128, 10130, 10136, 10137);
-
--- 4
-select concat(e.firstName, ' ' , e.lastName) as FullName, o.city
+create view employee_contact_details as
+select concat(e.firstName, ' ', e.lastName) as fullName, e.email, o.city
 from employees e
 join offices o
-	on e.officeCode = o.officeCode
-where o.city = 'Sydney';
+	on o.officeCode = e.officeCode;
+select * from employee_contact_details;
 
--- 5
-SELECT p.*,
-       CONCAT(c.contactFirstName, ' ', c.contactLastName) AS FullName
-FROM customers c
-JOIN orders o
-    ON c.customerNumber = o.customerNumber
-JOIN orderdetails od
-    ON o.orderNumber = od.orderNumber
-JOIN products p
-    ON od.productCode = p.productCode
-WHERE TRIM(c.contactFirstName) = 'Diego'
-  AND TRIM(c.contactLastName) = 'Freyre';
-  
--- 6
-select firstName,lastName, email, o.city
-	from employees e
-join offices o
-	on e.officeCode=o.officeCode
-where city = 'San Francisco';
-
--- 7
-select e.* 
-from employees e
-join employees m
-	on e.reportsTo = m.employeeNumber
-where m.firstName = 'Diane' and m.lastName ='Murphy';
-
--- 8
-select orderNumber, p.productName, pl.productLine
-	from orderdetails od
-join products p
-	on p.productCode = od.productCode
-join productlines pl
-	on pl.productline = p.productline
-where orderNumber = '10100';
-
--- 9
-select distinct c.*
-	from customers c
+drop view customer_details;
+-- 2 Create a view that contains information about customerNumber, customerName, Full contact name, orderNumber, order status and total amount of each order.
+create or replace view customer_details as
+select c.customerNumber, c.customerName,
+		concat(c.contactfirstName,' ', c.contactLastName) as fullName,
+        o.orderNumber, o.status,
+        p.amount
+from customers c
+join orders o
+	on o.customerNumber = c.customerNumber
 join payments p
-	on p.customerNumber = c.customerNumber
-where p.amount>5000;
+	on p.customerNumber = c.customerNumber;
+select * from customer_details;
 
--- 10
-SELECT distinct c.customerNumber, c.customerName, c.phone, c.addressLine1
-FROM customers c
-JOIN orders o
+-- 3 Create a view that contains information about customer name, customer city, product name and quantity of given product ordered by all customers.
+CREATE VIEW customer_product_orders AS
+SELECT
+    c.customerName AS customer_name,
+    c.city AS customer_city,
+    p.productName AS product_name,
+    od.quantityOrdered AS quantity_ordered
+FROM customers AS c
+JOIN orders AS o
     ON c.customerNumber = o.customerNumber
-JOIN orderdetails od
+JOIN orderdetails AS od
     ON o.orderNumber = od.orderNumber
-JOIN products p
-    ON od.productCode = p.productCode
-WHERE p.productName = '1939 Cadillac Limousine';
-
-
+JOIN products AS p
+    ON od.productCode = p.productCode;
+select * from customer_product_orders;
