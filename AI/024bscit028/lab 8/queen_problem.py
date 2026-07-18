@@ -1,71 +1,78 @@
-def isSafe(mat, row, col):
-    n = len(mat)
+import os
 
-    # Check this col on upper side
+os.system("cls")
+
+
+N = 8
+
+
+def is_safe(board, row, col):
+
+    # Check same column
     for i in range(row):
-        if mat[i][col]:
-            return 0
+        if board[i][col] == "Q":
+            return False
 
-    # Check upper diagonal on left side
-    i, j = row - 1, col - 1
+    # Check left diagonal
+    i = row - 1
+    j = col - 1
+
     while i >= 0 and j >= 0:
-        if mat[i][j]:
-            return 0
+        if board[i][j] == "Q":
+            return False
         i -= 1
         j -= 1
 
-    # Check upper diagonal on right side
-    i, j = row - 1, col + 1
-    while i >= 0 and j < n:
-        if mat[i][j]:
-            return 0
+    # Check right diagonal
+    i = row - 1
+    j = col + 1
+
+    while i >= 0 and j < N:
+        if board[i][j] == "Q":
+            return False
         i -= 1
         j += 1
 
-    return 1
+    return True
 
-# Recursive function to place queens
-def placeQueens(row, mat, result):
-    n = len(mat)
 
-    # base case: If all queens are placed
-    if row == n:
-        
-        # store current solution
-        ans = []
-        for i in range(n):
-            for j in range(n):
-                if mat[i][j]:
-                    ans.append(j + 1)
-        result.append(ans)
-        return
+def solve(board, row):
 
-    # Consider the row and try placing
-    # queen in all columns one by one
-    for i in range(n):
-        
-        # Check if the queen can be placed
-        if isSafe(mat, row, i):
-            mat[row][i] = 1
-            placeQueens(row + 1, mat, result)
+    # Base case
+    if row == N:
+        return True
 
-            # backtrack
-            mat[row][i] = 0
+    # Try every column
+    for col in range(N):
 
-# Function to find all solutions
-def nQueen(n):
-    
-    # Initialize the board
-    mat = [[0] * n for _ in range(n)]
-    result = []
+        if is_safe(board, row, col):
 
-    # Place queens
-    placeQueens(0, mat, result)
+            board[row][col] = "Q"
 
-    return result
+            if solve(board, row + 1):
+                return True
 
-if __name__ == "__main__":
-    n = 8
-    result = nQueen(n)
-    for ans in result:
-        print(" ".join(map(str, ans)))
+            # Backtracking
+            board[row][col] = "."
+
+    return False
+
+
+board = [["." for _ in range(N)] for _ in range(N)]
+
+if solve(board, 0):
+
+    print("Solution Found")
+
+    for row in board:
+        print(" ".join(row))
+
+    print("\nQueen Positions (Row, Column):")
+
+    for row in range(N):
+        for col in range(N):
+            if board[row][col] == "Q":
+                print(f"({row}, {col})")
+
+else:
+    print("No Solution")
