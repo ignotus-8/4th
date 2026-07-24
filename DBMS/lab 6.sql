@@ -1,4 +1,4 @@
-drop database thisAName;
+-- drop database thisAName;
 /*Table structure for table `offices` */
 CREATE DATABASE thisAName;
 use thisAName;
@@ -7799,18 +7799,24 @@ join offices o
 	on o.officeCode = e.officeCode;
 select * from employee_contact_details;
 
-drop view customer_details;
+-- drop view customer_details;
 -- 2 Create a view that contains information about customerNumber, customerName, Full contact name, orderNumber, order status and total amount of each order.
 create or replace view customer_details as
 select c.customerNumber, c.customerName,
 		concat(c.contactfirstName,' ', c.contactLastName) as fullName,
         o.orderNumber, o.status,
-        p.amount
+        sum(od.quantityOrdered * od.priceEach) as total_amount
 from customers c
 join orders o
 	on o.customerNumber = c.customerNumber
-join payments p
-	on p.customerNumber = c.customerNumber;
+JOIN orderdetails od
+    ON o.orderNumber = od.orderNumber
+GROUP BY
+    c.customerNumber,
+    c.customerName,
+    fullName,
+    o.orderNumber,
+    o.status;
 select * from customer_details;
 
 -- 3 Create a view that contains information about customer name, customer city, product name and quantity of given product ordered by all customers.
@@ -7828,3 +7834,55 @@ JOIN orderdetails AS od
 JOIN products AS p
     ON od.productCode = p.productCode;
 select * from customer_product_orders;
+
+-- drop view customer_amount;
+-- 4 Create a view that contains information about customer number, customer name, total amount paid by each customer.
+create view customer_amount as
+select c.customerNumber, c.customerName, sum(p.amount) as total_amount
+from customers c
+join payments p
+	on c.customerNumber=p.customerNumber
+group by c.customerNumber,c.customerName;
+select * from customer_amount;
+
+-- drop view city_product_details;
+-- 5. Create a view that contains information about product details for products ordered by customer residing in city ‘NYC’.
+create view city_product_details as
+select distinct p.* from products p
+join orderdetails od
+	on od.productCode = p.productCode
+join orders o
+	on o.orderNumber = od.orderNumber
+join customers c
+	on c.customerNumber = o.customerNumber
+where c.city = "NYC";
+select * from city_product_details;
+
+-- 6. Update view in question number 1 to add information about the employee&#39;s job title.
+create or replace view employee_contact_details as
+select concat(e.firstName, ' ', e.lastName) as fullName, e.email,e.jobTitle, o.city
+from employees e
+join offices o
+	on o.officeCode = e.officeCode;
+select * from employee_contact_details;
+
+-- 7. Update view in question number 5 to information about product details for products ordered by customer residing in city ‘Las Vegas’ and ‘San Francisco’.
+create or replace view city_product_details as
+select distinct p.* from products p
+join orderdetails od
+	on od.productCode = p.productCode
+join orders o
+	on o.orderNumber = od.orderNumber
+join customers c
+	on c.customerNumber = o.customerNumber
+where c.city in ("San Francisco","Las Vegas");
+select * from city_product_details;
+
+-- 8. Using view created in question number 4, find out the total amount paid by the customer in each city.
+SELECT 
+    c.city,
+    SUM(ca.total_amount) AS total_amount
+FROM customer_amount ca
+JOIN customers c
+    ON ca.customerNumber = c.customerNumber
+GROUP BY c.city;
